@@ -16,14 +16,18 @@ const lotteryContract = new ethers.Contract(address, abi, provider).connect(
   wallet
 );
 
-console.log(wallet);
-console.log(lotteryContract);
+const approve = () => {};
 
 const startLottery = () => {
+  const currentDate = new Date();
+  const timestamp = Math.round(currentDate.getTime() / 1000) + 4 * 60 * 60;
+
+  approve();
+
   lotteryContract
     .startLottery(
-      1634256000, // Timestamp for future time
-      5000000000000000000,
+      timestamp, // Timestamp for future time
+      "5000000000000000000",
       500,
       [2500, 2000, 1250, 1750, 600, 1900],
       2000
