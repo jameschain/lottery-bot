@@ -2,6 +2,8 @@ require("dotenv").config();
 
 const ethers = require("ethers");
 const abi = require("./abi/lottery.json");
+const BN = require("bignumber.js");
+const schedule = require("node-schedule");
 
 const infuraKey = process.env.INFURA_KEY;
 const myPrivateKeyHex = process.env.WALLET_PRIVATE_KEY_HEX;
@@ -32,16 +34,40 @@ const startLottery = async () => {
 
   console.log(result);
 };
+const getCurrentLotteryId = async () => {
+  return (await lotteryContract.currentLotteryId.call()).toString();
+};
 
 const closeLottery = async () => {
-  const result = await lotteryContract.closeLottery(3);
+  const currentLotteryId = await getCurrentLotteryId();
+
+  const result = await lotteryContract.closeLottery(parseInt(currentLotteryId));
   console.log(result);
+};
+
+const drawFinalLottery = async () => {
+  const currentLotteryId = await getCurrentLotteryId();
 
   const drawFinalResult =
-    await lotteryContract.drawFinalNumberAndMakeLotteryClaimable(3, true);
+    await lotteryContract.drawFinalNumberAndMakeLotteryClaimable(
+      parseInt(currentLotteryId),
+      true
+    );
 
   console.log(drawFinalResult);
 };
 
-// closeLottery();
-startLottery();
+schedule.scheduleJob(
+  { tz: "America/Atikokan", hour: 22, minute: 0 },
+  closeLottery
+);
+
+schedule.scheduleJob(
+  { tz: "America/Atikokan", hour: 22, minute: 5 },
+  drawFinalLottery
+);
+
+schedule.scheduleJob(
+  { tz: "America/Atikokan", hour: 22, minute: 10 },
+  startLottery
+);
